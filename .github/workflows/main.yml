@@ -31,7 +31,7 @@ jobs:
       # 5️⃣ Setup SSH for deployment
       - name: Setup SSH key
         run: |
-          touch ~/.ssh/id_rsa
+          mkdir -p ~/.ssh
           echo "${{ secrets.CLOUDPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.CLOUDPANEL_HOST }} >> ~/.ssh/known_hosts
