@@ -53,7 +53,7 @@ jobs:
       - name: Copy files to CloudPanel server
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.CLOUDPANEL_USER }}@${{ secrets.CLOUDPANEL_HOST }} "sudo mkdir -p /home/hinfinity/app"
-          scp -i ~/.ssh/id_rsa -r .next package.json ${{ secrets.CLOUDPANEL_USER }}@${{ secrets.CLOUDPANEL_HOST }}:/home/hinfinity/app
+          sudo scp -i ~/.ssh/id_rsa -r .next package.json ${{ secrets.CLOUDPANEL_USER }}@${{ secrets.CLOUDPANEL_HOST }}:/home/hinfinity/app
 
       # 8️⃣ Restart with pm2
       - name: Restart Next.js app
