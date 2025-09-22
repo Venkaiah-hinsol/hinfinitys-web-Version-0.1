@@ -10,25 +10,25 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1️⃣ Checkout repo
+      # Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js
+      # Setup Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
 
-      # 3️⃣ Install dependencies
+      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # 4️⃣ Build Next.js app
+      # Build Next.js app
       - name: Build Next.js app
         run: npm run build
 
-      # 5️⃣ Setup SSH
+      # Setup ssh
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -36,7 +36,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.CLOUDPANEL_HOST }} >> ~/.ssh/known_hosts
 
-      # 6️⃣ Ensure Node.js & pm2 on server
+      # checking availability Node.js & pm2 on server
       - name: Install Node.js & pm2 if missing
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.CLOUDPANEL_HOST }} "
@@ -49,17 +49,17 @@ jobs:
             fi
           "
 
-      # 7️⃣ Create app directory on server
+      # Creating app directory on server
       - name: Create app directory
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.CLOUDPANEL_HOST }} "mkdir -p /home/ubuntu/app"
 
-      # 8️⃣ Copy build files to server
+      # Copy build files to server
       - name: Copy files to CloudPanel server
         run: |
           scp -i ~/.ssh/id_rsa -r .next package.json ubuntu@${{ secrets.CLOUDPANEL_HOST }}:/home/ubuntu/app
 
-      # 9️⃣ Install dependencies & restart app with pm2
+      # Installing dependencies & restart app with pm2
       - name: Restart Next.js app
         run: |
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.CLOUDPANEL_HOST }} "
