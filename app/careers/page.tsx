@@ -181,7 +181,7 @@ export default function CareersPage() {
       department: "Product",
       location: "Remote / Global",
       type: "Full-time",
-      experience: "5+ years",
+      experience: "4+ years",
       description:
         "Lead product strategy and execution for our technology solutions. You'll work closely with clients, engineering teams, and stakeholders to deliver products that solve real business problems.",
       requirements: [
