@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted  # shared runner, works with self-hosted too
+    runs-on: ubuntu-latest
 
     steps:
       # 1️⃣ Checkout repo
@@ -24,11 +24,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 4️⃣ Build Next.js
+      # 4️⃣ Build Next.js app
       - name: Build Next.js app
         run: npm run build
 
-      # 5️⃣ Setup SSH for deployment
+      # 5️⃣ Setup SSH
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -37,9 +37,9 @@ jobs:
           ssh-keyscan -H ${{ secrets.CLOUDPANEL_HOST }} >> ~/.ssh/known_hosts
 
       # 6️⃣ Ensure Node.js & pm2 on server
-      - name: Install Node.js & pm2 on server if missing
+      - name: Install Node.js & pm2 if missing
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.CLOUDPANEL_USER }}@${{ secrets.CLOUDPANEL_HOST }} "
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.CLOUDPANEL_HOST }} "
             if ! command -v node >/dev/null 2>&1; then
               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
               sudo apt-get install -y nodejs
@@ -49,17 +49,21 @@ jobs:
             fi
           "
 
-      # 7️⃣ Deploy files
+      # 7️⃣ Create app directory on server
+      - name: Create app directory
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.CLOUDPANEL_HOST }} "mkdir -p /home/ubuntu/app"
+
+      # 8️⃣ Copy build files to server
       - name: Copy files to CloudPanel server
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.CLOUDPANEL_USER }}@${{ secrets.CLOUDPANEL_HOST }} "mkdir -p /home/hinfinity/app"
-          scp -i ~/.ssh/id_rsa -r .next package.json ${{ secrets.CLOUDPANEL_USER }}@${{ secrets.CLOUDPANEL_HOST }}:/home/hinfinity/app
+          scp -i ~/.ssh/id_rsa -r .next package.json ubuntu@${{ secrets.CLOUDPANEL_HOST }}:/home/ubuntu/app
 
-      # 8️⃣ Restart with pm2
+      # 9️⃣ Install dependencies & restart app with pm2
       - name: Restart Next.js app
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.CLOUDPANEL_USER }}@${{ secrets.CLOUDPANEL_HOST }} "
-            cd /home/hinfinity/app &&
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.CLOUDPANEL_HOST }} "
+            cd /home/ubuntu/app &&
             npm install --production &&
             pm2 restart nextjs-app || pm2 start npm --name 'nextjs-app' -- start
           "
